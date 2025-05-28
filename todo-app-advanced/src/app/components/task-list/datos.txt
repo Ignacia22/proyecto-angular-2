@@ -1,0 +1,11 @@
+// Sin destroy$ - Memory leak:
+// Componente creado → Suscripción activa ✓
+// Usuario cambia de página → Componente destruido ✗ Suscripción sigue activa ❌
+// Usuario vuelve → Nuevo componente + Nueva suscripción + Suscripción anterior ❌❌
+// = Tu app se vuelve lenta
+
+// Con destroy$ - Limpio:
+// Componente creado → Suscripción activa ✓  
+// Usuario cambia de página → Componente destruido + Suscripción cancelada ✓
+// Usuario vuelve → Solo nueva suscripción ✓
+// = Tu app siempre rápida
