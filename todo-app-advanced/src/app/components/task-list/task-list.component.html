@@ -1,1 +1,155 @@
-<p>task-list works!</p>
+<div class="task-container">
+    <div class="header">
+        <h1>📝 Mi Lista de Tareas</h1>
+        <p>Organiza tu día de manera inteligente</p>
+    </div>
+
+    <!-- Formulario para crear/editar tareas -->
+     <div class="task-form-section">
+        <form 
+        [formGroup]="taskForm" 
+        (ngSubmit)="onSubmit()" 
+        class="task-form"> 
+        <!-- taskForm: asigna el formulario -->
+            <h2>{{ isEditing ? '✏️ Editar Tarea' : '➕ Nueva Tarea' }}</h2>
+
+            <div class="form-group">
+                <label for="title">Título *</label>
+                <input 
+                type="text" 
+                id="title"
+                formControlName="title" 
+                placeholder="¿Qué necesitas hacer?"
+                [class.error]="title?.invalid && title?.touched">
+
+                <div class="error-message" *ngIf="title?.invalid && title?.touched">
+                    <span *ngIf="title?.errors?.['required']">El título es obligatorio</span>
+                    <span *ngIf="title?.errors?.['minlength']">Mínimo 3 caracteres</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descripción</label>
+                <textarea 
+                  id="description"
+                  formControlName="description" 
+                  placeholder="Detalles adicionales (opcional)"
+                  rows="3">
+                </textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="priority">Prioridad</label>
+                <select id="priority" formControlName="priority">
+                  <option value="low">🟢 Baja</option>
+                  <option value="medium">🟡 Media</option>
+                  <option value="high">🔴 Alta</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" [disabled]="taskForm.invalid" class="btn-primary">
+                    {{ isEditing ? 'Actualizar' : 'Agregar' }} Tarea
+                </button>
+        
+                <button type="button" *ngIf="isEditing" (click)="cancelEdit()" class="btn-secondary">
+                   Cancelar
+                </button>
+            </div>
+        </form>
+     </div>
+
+     <!-- Filtros y búsqueda -->
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        placeholder="🔍 Buscar tareas..." 
+        (input)="onSearchChange($event)"
+        class="search-input">
+    </div>
+
+    <div class="filter-buttons">
+      <button 
+  (click)="onFilterChange('all')" 
+  [class.active]="filterStatus === 'all'"
+  class="filter-btn">
+  Todas ({{ getTotalCount() }})
+</button>
+
+<button 
+  (click)="onFilterChange('pending')" 
+  [class.active]="filterStatus === 'pending'"
+  class="filter-btn">
+  Pendientes ({{ getPendingCount() }})
+</button>
+
+<button 
+  (click)="onFilterChange('completed')" 
+  [class.active]="filterStatus === 'completed'"
+  class="filter-btn">
+  Completadas ({{ getCompletedCount() }})
+</button>
+    </div>
+  </div>
+
+  <!-- Lista de tareas -->
+  <div class="tasks-section">
+    <div class="tasks-list" *ngIf="filteredTasks.length > 0; else noTasks">
+        <!-- Si hay tareas, muestra esto -->
+      <div 
+        *ngFor="let task of filteredTasks; trackBy: trackByTaskId" 
+        class="task-item"
+        [class.completed]="task.completed"
+        [class.priority-high]="task.priority === 'high'"
+        [class.priority-medium]="task.priority === 'medium'"
+        [class.priority-low]="task.priority === 'low'"> <!-- trackBy: optimización para no re-renderizar todo -->
+
+        <!-- Si task.completed es true → class="completed" -->
+         <!-- Si task.completed es false → no clase -->
+          <!-- Si la prioridad es 'high' → class="priority-high" -->
+        
+        <div class="task-content">
+          <div class="task-header">
+            <h3 [class.strikethrough]="task.completed">{{ task.title }}</h3>
+            <span class="priority-badge priority-{{ task.priority }}">
+              {{ task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢' }}
+            </span>
+          </div>
+          
+          <p *ngIf="task.description" class="task-description">{{ task.description }}</p>
+          
+          <div class="task-meta">
+            <small>Creada: {{ task.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
+          </div>
+        </div>
+
+        <div class="task-actions">
+          <button 
+            (click)="toggleComplete(task.id)" 
+            [class.completed]="task.completed"
+            class="btn-toggle">
+            {{ task.completed ? '✅' : '⭕' }}
+          </button>
+          
+          <button (click)="editTask(task)" class="btn-edit" title="Editar">
+            ✏️
+          </button>
+          
+          <button (click)="deleteTask(task.id)" class="btn-delete" title="Eliminar">
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noTasks>
+        <!-- Si NO hay tareas, muestra esto -->
+      <div class="no-tasks">
+        <div class="no-tasks-icon">📋</div>
+        <h3>No hay tareas {{ filterStatus === 'all' ? '' : filterStatus === 'pending' ? 'pendientes' : 'completadas' }}</h3>
+        <p>{{ searchTerm ? 'Intenta cambiar el término de búsqueda' : 'Crea tu primera tarea arriba' }}</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -1,16 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-task-list',
-  imports: [TaskService],
+  standalone: true,  
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css'
 })
-export class TaskListComponent {
+export class TaskListComponent implements OnInit, OnDestroy {
   tasks: Task[] = [];
   filteredTasks: Task[] = [];
   taskForm: FormGroup;
@@ -107,6 +109,22 @@ export class TaskListComponent {
   onFilterChange(status: 'all' | 'pending' | 'completed'): void {
     this.filterStatus = status;
     this.applyFilters();
+  }
+
+  getPendingCount(): number {
+  return this.tasks.filter(task => !task.completed).length;
+}
+
+getCompletedCount(): number {
+  return this.tasks.filter(task => task.completed).length;
+}
+
+getTotalCount(): number {
+  return this.tasks.length;
+}
+
+  trackByTaskId(index: number, task: Task): number {
+  return task.id;
   }
 
   private applyFilters(): void {
